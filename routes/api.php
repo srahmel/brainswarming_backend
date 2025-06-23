@@ -1,0 +1,94 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "api" middleware group. Make something great!
+|
+*/
+
+// Public endpoints
+Route::post('/register', function () {
+    // Implementation will be added later
+    return response()->json(['message' => 'Register endpoint']);
+});
+
+Route::post('/login', function () {
+    // Implementation will be added later
+    return response()->json(['message' => 'Login endpoint']);
+});
+
+// CSRF token endpoint
+Route::get('/csrf-token', function () {
+    return response()->json(['csrf_token' => csrf_token()]);
+});
+
+Route::post('/teams/invite/accept', [\App\Http\Controllers\Api\TeamController::class, 'acceptInvite']);
+
+// Swagger documentation route
+Route::get('/documentation', function () {
+    return view('swagger');
+});
+
+// Authenticated endpoints
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
+    // Teams routes
+    Route::get('/teams', [\App\Http\Controllers\Api\TeamController::class, 'index']);
+    Route::post('/teams', [\App\Http\Controllers\Api\TeamController::class, 'store']);
+    Route::post('/teams/join', [\App\Http\Controllers\Api\TeamController::class, 'joinByCode']);
+    Route::get('/teams/join/{token}', [\App\Http\Controllers\Api\TeamController::class, 'joinByLink']);
+    Route::delete('/teams/{teamId}/leave', [\App\Http\Controllers\Api\TeamController::class, 'leave']);
+
+    Route::delete('/teams/{team}', function ($team) {
+        // Implementation will be added later
+        return response()->json(['message' => 'Delete team endpoint']);
+    });
+
+    Route::patch('/teams/{team}/settings', function ($team) {
+        // Implementation will be added later
+        return response()->json(['message' => 'Update team settings endpoint']);
+    });
+
+    Route::post('/teams/{teamId}/invite/generate', [\App\Http\Controllers\Api\TeamController::class, 'generateInviteLink']);
+
+    // Entries routes
+    // Routes for deleted entries, restore, and export (must be defined before the {id} routes)
+    Route::get('/teams/{teamId}/entries/deleted', [\App\Http\Controllers\Api\EntryController::class, 'deleted']);
+    Route::get('/teams/{teamId}/entries/export', [\App\Http\Controllers\Api\EntryController::class, 'export']);
+
+    // Standard CRUD routes
+    Route::get('/teams/{teamId}/entries', [\App\Http\Controllers\Api\EntryController::class, 'index']);
+    Route::post('/teams/{teamId}/entries', [\App\Http\Controllers\Api\EntryController::class, 'store']);
+    Route::get('/teams/{teamId}/entries/{id}', [\App\Http\Controllers\Api\EntryController::class, 'show']);
+    Route::patch('/teams/{teamId}/entries/{id}', [\App\Http\Controllers\Api\EntryController::class, 'update']);
+    Route::delete('/teams/{teamId}/entries/{id}', [\App\Http\Controllers\Api\EntryController::class, 'destroy']);
+    Route::post('/teams/{teamId}/entries/{id}/restore', [\App\Http\Controllers\Api\EntryController::class, 'restore']);
+
+    // Admin routes
+    Route::post('/teams/{team}/admins/add', function ($team) {
+        // Implementation will be added later
+        return response()->json(['message' => 'Add team admin endpoint']);
+    });
+
+    Route::post('/teams/{team}/admins/remove', function ($team) {
+        // Implementation will be added later
+        return response()->json(['message' => 'Remove team admin endpoint']);
+    });
+
+    // User routes
+    Route::get('/me/teams', function () {
+        // Implementation will be added later
+        return response()->json(['message' => 'Get user teams endpoint']);
+    });
+});

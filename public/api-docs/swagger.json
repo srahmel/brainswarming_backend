@@ -1,0 +1,1875 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Brainswarming API",
+        "description": "API for the Brainswarming platform - a SaaS platform for teams to anonymously or openly submit, evaluate, and prioritize improvement ideas.",
+        "contact": {
+            "name": "API Support",
+            "email": "admin@example.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/api",
+            "description": "API Server"
+        }
+    ],
+    "paths": {
+        "/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Register a new user",
+                "description": "Register a new user.",
+                "operationId": "5d4fa5d5607ed675ba93907e1fc94534",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "securepassword"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "securepassword"
+                                    },
+                                    "nickname": {
+                                        "type": "string",
+                                        "example": "Johnny",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User registered successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "John Doe"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "john@example.com"
+                                                },
+                                                "nickname": {
+                                                    "type": "string",
+                                                    "example": "Johnny"
+                                                },
+                                                "anonymous": {
+                                                    "type": "boolean",
+                                                    "example": false
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-06-10T12:00:00.000000Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-06-10T12:00:00.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "1|laravel_sanctum_token_example"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Authenticate a user and get a token",
+                "description": "Login a user and create a token.",
+                "operationId": "67d6d0fdd54fba132e1b6f55ca254183",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "securepassword"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User authenticated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "John Doe"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "john@example.com"
+                                                },
+                                                "nickname": {
+                                                    "type": "string",
+                                                    "example": "Johnny"
+                                                },
+                                                "anonymous": {
+                                                    "type": "boolean",
+                                                    "example": false
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-06-10T12:00:00.000000Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-06-10T12:00:00.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "1|laravel_sanctum_token_example"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    }
+                }
+            }
+        },
+        "/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Logout a user and revoke token",
+                "description": "Logout a user and revoke token.",
+                "operationId": "28d48c13fca984400ac8de99f54ee13a",
+                "responses": {
+                    "200": {
+                        "description": "Successfully logged out",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Successfully logged out"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/csrf-token": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Get a CSRF token for SPA authentication",
+                "description": "Get CSRF token for SPA.",
+                "operationId": "e0ee4f5b54fb5fbd22433a14e760aa3a",
+                "responses": {
+                    "200": {
+                        "description": "CSRF token retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "csrf_token": {
+                                            "type": "string",
+                                            "example": "example_csrf_token_string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/teams/{teamId}/entries": {
+            "get": {
+                "tags": [
+                    "Entries"
+                ],
+                "summary": "Get all entries for a team",
+                "description": "Returns a list of all entries for the specified team, ordered by priority",
+                "operationId": "getTeamEntries",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "ID of the team",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "area",
+                        "in": "query",
+                        "description": "Filter entries by area",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "entries": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Entry"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Team not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Entries"
+                ],
+                "summary": "Create a new entry for a team",
+                "description": "Creates a new entry for the specified team",
+                "operationId": "storeTeamEntry",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "ID of the team",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "problem",
+                                    "solution",
+                                    "area",
+                                    "effort",
+                                    "monetary_explanation"
+                                ],
+                                "properties": {
+                                    "problem": {
+                                        "type": "string",
+                                        "example": "Slow customer response time"
+                                    },
+                                    "solution": {
+                                        "type": "string",
+                                        "example": "Implement automated response system"
+                                    },
+                                    "area": {
+                                        "type": "string",
+                                        "example": "Customer Service"
+                                    },
+                                    "time_saved_per_year": {
+                                        "type": "integer",
+                                        "example": 500,
+                                        "nullable": true
+                                    },
+                                    "gross_profit_per_year": {
+                                        "type": "integer",
+                                        "example": 10000,
+                                        "nullable": true
+                                    },
+                                    "effort": {
+                                        "type": "string",
+                                        "enum": [
+                                            "low",
+                                            "medium",
+                                            "high"
+                                        ],
+                                        "example": "medium"
+                                    },
+                                    "monetary_explanation": {
+                                        "type": "string",
+                                        "example": "Saves 500 hours per year at $20/hour"
+                                    },
+                                    "link": {
+                                        "type": "string",
+                                        "example": "https://example.com/docs",
+                                        "nullable": true
+                                    },
+                                    "anonymous": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "manual_override_prio": {
+                                        "type": "integer",
+                                        "example": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Entry created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "entry": {
+                                            "$ref": "#/components/schemas/Entry"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Team not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/teams/{teamId}/entries/{id}": {
+            "get": {
+                "tags": [
+                    "Entries"
+                ],
+                "summary": "Get a specific entry",
+                "description": "Returns a specific entry for the specified team",
+                "operationId": "getTeamEntry",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "ID of the team",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the entry",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "entry": {
+                                            "$ref": "#/components/schemas/Entry"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Entry not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Entries"
+                ],
+                "summary": "Delete a specific entry",
+                "description": "Soft deletes a specific entry for the specified team",
+                "operationId": "deleteTeamEntry",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "ID of the team",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the entry",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Entry deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Entry deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Entry not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Entries"
+                ],
+                "summary": "Update a specific entry",
+                "description": "Updates a specific entry for the specified team",
+                "operationId": "updateTeamEntry",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "ID of the team",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the entry",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "problem": {
+                                        "type": "string",
+                                        "example": "Updated customer response time issue"
+                                    },
+                                    "solution": {
+                                        "type": "string",
+                                        "example": "Implement AI-based response system"
+                                    },
+                                    "area": {
+                                        "type": "string",
+                                        "example": "Customer Service"
+                                    },
+                                    "time_saved_per_year": {
+                                        "type": "integer",
+                                        "example": 600,
+                                        "nullable": true
+                                    },
+                                    "gross_profit_per_year": {
+                                        "type": "integer",
+                                        "example": 12000,
+                                        "nullable": true
+                                    },
+                                    "effort": {
+                                        "type": "string",
+                                        "enum": [
+                                            "low",
+                                            "medium",
+                                            "high"
+                                        ],
+                                        "example": "low"
+                                    },
+                                    "monetary_explanation": {
+                                        "type": "string",
+                                        "example": "Saves 600 hours per year at $20/hour"
+                                    },
+                                    "link": {
+                                        "type": "string",
+                                        "example": "https://example.com/updated-docs",
+                                        "nullable": true
+                                    },
+                                    "anonymous": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "manual_override_prio": {
+                                        "type": "integer",
+                                        "example": 5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Entry updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "entry": {
+                                            "$ref": "#/components/schemas/Entry"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Entry not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/teams/{teamId}/entries/deleted": {
+            "get": {
+                "tags": [
+                    "Entries"
+                ],
+                "summary": "Get all deleted entries for a team",
+                "description": "Returns a list of all soft-deleted entries for the specified team",
+                "operationId": "getDeletedTeamEntries",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "ID of the team",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "entries": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Entry"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Team not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/teams/{teamId}/entries/{id}/restore": {
+            "post": {
+                "tags": [
+                    "Entries"
+                ],
+                "summary": "Restore a deleted entry",
+                "description": "Restores a soft-deleted entry for the specified team",
+                "operationId": "restoreTeamEntry",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "ID of the team",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the entry",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Entry restored successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Entry restored successfully"
+                                        },
+                                        "entry": {
+                                            "$ref": "#/components/schemas/Entry"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Entry not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/teams/{teamId}/entries/export": {
+            "get": {
+                "tags": [
+                    "Entries"
+                ],
+                "summary": "Export team entries",
+                "description": "Exports all entries for the specified team in CSV format",
+                "operationId": "exportTeamEntries",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "ID of the team",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "CSV file containing all entries",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "text/csv",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            },
+                            "Content-Disposition": {
+                                "description": "attachment; filename=entries.csv",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Team not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/teams": {
+            "get": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Get all teams for the authenticated user",
+                "description": "Returns a list of all teams the authenticated user belongs to",
+                "operationId": "getUserTeams",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "teams": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Team"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Create a new team",
+                "description": "Creates a new team with the authenticated user as the founder",
+                "operationId": "createTeam",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "team_code"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "New Project Team"
+                                    },
+                                    "team_code": {
+                                        "type": "string",
+                                        "example": "NPT789"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Team created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "team": {
+                                            "$ref": "#/components/schemas/Team"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/teams/join": {
+            "post": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Join a team using a team code",
+                "description": "Allows a user to join a team using a team code",
+                "operationId": "joinTeamByCode",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "team_code"
+                                ],
+                                "properties": {
+                                    "team_code": {
+                                        "type": "string",
+                                        "example": "DEV123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully joined the team",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Successfully joined the team"
+                                        },
+                                        "team": {
+                                            "$ref": "#/components/schemas/Team"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Team not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/teams/join/{token}": {
+            "get": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Join a team using an invite link token",
+                "description": "Allows a user to join a team using an invite link token",
+                "operationId": "joinTeamByLink",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "description": "Invite token",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully joined the team",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Successfully joined the team"
+                                        },
+                                        "team": {
+                                            "$ref": "#/components/schemas/Team"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Team not found or invite token expired"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/teams/invite/accept": {
+            "post": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Accept a team invitation",
+                "description": "Allows a user to accept a team invitation using an invite token",
+                "operationId": "acceptTeamInvite",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "invite_token"
+                                ],
+                                "properties": {
+                                    "invite_token": {
+                                        "type": "string",
+                                        "example": "unique_invite_token_string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Invitation accepted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invitation accepted successfully"
+                                        },
+                                        "team": {
+                                            "$ref": "#/components/schemas/Team"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Team not found or invite token expired"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/teams/{teamId}/leave": {
+            "delete": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Leave a team",
+                "description": "Allows a user to leave a team they are a member of",
+                "operationId": "leaveTeam",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "ID of the team",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully left the team",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Successfully left the team"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden - Cannot leave a team you founded"
+                    },
+                    "404": {
+                        "description": "Team not found or user is not a member"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/teams/{teamId}/invite/generate": {
+            "post": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Generate a new invite link",
+                "description": "Generates a new invite link for a team (requires admin privileges)",
+                "operationId": "generateTeamInvite",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "ID of the team",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "expires_in_days": {
+                                        "description": "Number of days until the invite expires (default: 7)",
+                                        "type": "integer",
+                                        "example": 7
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Invite link generated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invite link generated successfully"
+                                        },
+                                        "invite_token": {
+                                            "type": "string",
+                                            "example": "unique_invite_token_string"
+                                        },
+                                        "invite_link": {
+                                            "type": "string",
+                                            "example": "https://example.com/teams/join/unique_invite_token_string"
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2023-06-17T12:00:00.000000Z"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden - User is not an admin"
+                    },
+                    "404": {
+                        "description": "Team not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "StoreEntryRequest": {
+                "title": "Store Entry Request",
+                "description": "Request for creating a new entry",
+                "required": [
+                    "problem",
+                    "solution",
+                    "area",
+                    "effort",
+                    "monetary_explanation"
+                ],
+                "properties": {
+                    "problem": {
+                        "description": "Description of the problem",
+                        "type": "string",
+                        "example": "Slow customer response time"
+                    },
+                    "solution": {
+                        "description": "Proposed solution to the problem",
+                        "type": "string",
+                        "example": "Implement automated response system"
+                    },
+                    "area": {
+                        "description": "Business area affected by the problem/solution",
+                        "type": "string",
+                        "example": "Customer Service"
+                    },
+                    "time_saved_per_year": {
+                        "description": "Estimated time saved per year in hours",
+                        "type": "integer",
+                        "example": 500,
+                        "nullable": true
+                    },
+                    "gross_profit_per_year": {
+                        "description": "Estimated gross profit increase per year",
+                        "type": "integer",
+                        "example": 10000,
+                        "nullable": true
+                    },
+                    "effort": {
+                        "description": "Estimated effort to implement the solution",
+                        "type": "string",
+                        "enum": [
+                            "low",
+                            "medium",
+                            "high"
+                        ],
+                        "example": "medium"
+                    },
+                    "monetary_explanation": {
+                        "description": "Explanation of the monetary benefits",
+                        "type": "string",
+                        "example": "Saves 500 hours per year at $20/hour"
+                    },
+                    "link": {
+                        "description": "Optional link to additional information",
+                        "type": "string",
+                        "example": "https://example.com/docs",
+                        "nullable": true
+                    },
+                    "anonymous": {
+                        "description": "Whether the entry should be displayed anonymously",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "manual_override_prio": {
+                        "description": "Manual priority override value",
+                        "type": "integer",
+                        "example": 0
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateEntryRequest": {
+                "title": "Update Entry Request",
+                "description": "Request for updating an existing entry",
+                "properties": {
+                    "problem": {
+                        "description": "Description of the problem",
+                        "type": "string",
+                        "example": "Updated customer response time issue"
+                    },
+                    "solution": {
+                        "description": "Proposed solution to the problem",
+                        "type": "string",
+                        "example": "Implement AI-based response system"
+                    },
+                    "area": {
+                        "description": "Business area affected by the problem/solution",
+                        "type": "string",
+                        "example": "Customer Service"
+                    },
+                    "time_saved_per_year": {
+                        "description": "Estimated time saved per year in hours",
+                        "type": "integer",
+                        "example": 600,
+                        "nullable": true
+                    },
+                    "gross_profit_per_year": {
+                        "description": "Estimated gross profit increase per year",
+                        "type": "integer",
+                        "example": 12000,
+                        "nullable": true
+                    },
+                    "effort": {
+                        "description": "Estimated effort to implement the solution",
+                        "type": "string",
+                        "enum": [
+                            "low",
+                            "medium",
+                            "high"
+                        ],
+                        "example": "low"
+                    },
+                    "monetary_explanation": {
+                        "description": "Explanation of the monetary benefits",
+                        "type": "string",
+                        "example": "Saves 600 hours per year at $20/hour"
+                    },
+                    "link": {
+                        "description": "Optional link to additional information",
+                        "type": "string",
+                        "example": "https://example.com/updated-docs",
+                        "nullable": true
+                    },
+                    "anonymous": {
+                        "description": "Whether the entry should be displayed anonymously",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "manual_override_prio": {
+                        "description": "Manual priority override value",
+                        "type": "integer",
+                        "example": 5
+                    }
+                },
+                "type": "object"
+            },
+            "EntryResource": {
+                "title": "Entry Resource",
+                "description": "Entry resource representation",
+                "properties": {
+                    "id": {
+                        "description": "Unique identifier",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "team_id": {
+                        "description": "ID of the team this entry belongs to",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "description": "ID of the user who created this entry",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "problem": {
+                        "description": "Description of the problem",
+                        "type": "string",
+                        "example": "Slow customer response time"
+                    },
+                    "solution": {
+                        "description": "Proposed solution to the problem",
+                        "type": "string",
+                        "example": "Implement automated response system"
+                    },
+                    "area": {
+                        "description": "Business area affected by the problem/solution",
+                        "type": "string",
+                        "example": "Customer Service"
+                    },
+                    "time_saved_per_year": {
+                        "description": "Estimated time saved per year in hours",
+                        "type": "integer",
+                        "example": 500,
+                        "nullable": true
+                    },
+                    "gross_profit_per_year": {
+                        "description": "Estimated gross profit increase per year",
+                        "type": "integer",
+                        "example": 10000,
+                        "nullable": true
+                    },
+                    "effort": {
+                        "description": "Estimated effort to implement the solution",
+                        "type": "string",
+                        "enum": [
+                            "low",
+                            "medium",
+                            "high"
+                        ],
+                        "example": "medium"
+                    },
+                    "monetary_explanation": {
+                        "description": "Explanation of the monetary benefits",
+                        "type": "string",
+                        "example": "Saves 500 hours per year at $20/hour"
+                    },
+                    "link": {
+                        "description": "Optional link to additional information",
+                        "type": "string",
+                        "example": "https://example.com/docs",
+                        "nullable": true
+                    },
+                    "anonymous": {
+                        "description": "Whether the entry is displayed anonymously",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "manual_override_prio": {
+                        "description": "Manual priority override value",
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "final_prio": {
+                        "description": "Final calculated priority of the entry",
+                        "type": "integer",
+                        "example": 15
+                    },
+                    "created_at": {
+                        "description": "Creation timestamp",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-06-10T12:00:00.000000Z"
+                    },
+                    "updated_at": {
+                        "description": "Last update timestamp",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-06-10T12:00:00.000000Z"
+                    },
+                    "user": {
+                        "description": "User who created the entry (null if anonymous)",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "format": "int64",
+                                "example": 1
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "John Doe"
+                            },
+                            "nickname": {
+                                "type": "string",
+                                "example": "Johnny",
+                                "nullable": true
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Entry": {
+                "title": "Entry",
+                "description": "Entry model representing a brainstorming idea",
+                "properties": {
+                    "id": {
+                        "description": "Unique identifier",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "team_id": {
+                        "description": "ID of the team this entry belongs to",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "description": "ID of the user who created this entry",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "problem": {
+                        "description": "Description of the problem",
+                        "type": "string",
+                        "example": "Slow customer response time"
+                    },
+                    "solution": {
+                        "description": "Proposed solution to the problem",
+                        "type": "string",
+                        "example": "Implement automated response system"
+                    },
+                    "area": {
+                        "description": "Business area affected by the problem/solution",
+                        "type": "string",
+                        "example": "Customer Service"
+                    },
+                    "time_saved_per_year": {
+                        "description": "Estimated time saved per year in hours",
+                        "type": "integer",
+                        "example": 500,
+                        "nullable": true
+                    },
+                    "gross_profit_per_year": {
+                        "description": "Estimated gross profit increase per year",
+                        "type": "integer",
+                        "example": 10000,
+                        "nullable": true
+                    },
+                    "effort": {
+                        "description": "Estimated effort to implement the solution",
+                        "type": "string",
+                        "enum": [
+                            "low",
+                            "medium",
+                            "high"
+                        ],
+                        "example": "medium"
+                    },
+                    "monetary_explanation": {
+                        "description": "Explanation of the monetary benefits",
+                        "type": "string",
+                        "example": "Saves 500 hours per year at $20/hour"
+                    },
+                    "link": {
+                        "description": "Optional link to additional information",
+                        "type": "string",
+                        "example": "https://example.com/docs",
+                        "nullable": true
+                    },
+                    "anonymous": {
+                        "description": "Whether the entry should be displayed anonymously",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "manual_override_prio": {
+                        "description": "Manual priority override value",
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "final_prio": {
+                        "description": "Final calculated priority of the entry",
+                        "type": "integer",
+                        "example": 15
+                    },
+                    "created_at": {
+                        "description": "Creation timestamp",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-06-10T12:00:00.000000Z"
+                    },
+                    "updated_at": {
+                        "description": "Last update timestamp",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-06-10T12:00:00.000000Z"
+                    },
+                    "deleted_at": {
+                        "description": "Soft delete timestamp",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "user": {
+                        "description": "User who created the entry (null if anonymous)",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "format": "int64",
+                                "example": 1
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "John Doe"
+                            },
+                            "nickname": {
+                                "type": "string",
+                                "example": "Johnny",
+                                "nullable": true
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Team": {
+                "title": "Team",
+                "description": "Team model for brainswarming groups",
+                "properties": {
+                    "id": {
+                        "description": "Unique identifier",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "Name of the team",
+                        "type": "string",
+                        "example": "Innovation Team"
+                    },
+                    "team_code": {
+                        "description": "Unique code for joining the team",
+                        "type": "string",
+                        "example": "INNOV2023"
+                    },
+                    "invite_token": {
+                        "description": "Token for inviting users to the team",
+                        "type": "string",
+                        "example": "abc123xyz789"
+                    },
+                    "invite_expires_at": {
+                        "description": "Expiration date for the invite token",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-07-10T12:00:00.000000Z",
+                        "nullable": true
+                    },
+                    "founder_user_id": {
+                        "description": "ID of the user who created the team",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "settings": {
+                        "description": "Team settings as JSON",
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "Creation timestamp",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-06-10T12:00:00.000000Z"
+                    },
+                    "updated_at": {
+                        "description": "Last update timestamp",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-06-10T12:00:00.000000Z"
+                    },
+                    "deleted_at": {
+                        "description": "Soft delete timestamp",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": null,
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "title": "User",
+                "description": "User model",
+                "properties": {
+                    "id": {
+                        "description": "Unique identifier",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "Full name of the user",
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "email": {
+                        "description": "Email address",
+                        "type": "string",
+                        "format": "email",
+                        "example": "john@example.com"
+                    },
+                    "nickname": {
+                        "description": "Optional nickname",
+                        "type": "string",
+                        "example": "Johnny",
+                        "nullable": true
+                    },
+                    "anonymous": {
+                        "description": "Whether the user prefers to be anonymous by default",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "email_verified_at": {
+                        "description": "Email verification timestamp",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-06-10T12:00:00.000000Z",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "Creation timestamp",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-06-10T12:00:00.000000Z"
+                    },
+                    "updated_at": {
+                        "description": "Last update timestamp",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-06-10T12:00:00.000000Z"
+                    }
+                },
+                "type": "object"
+            },
+            "Error": {
+                "title": "Error",
+                "description": "Error response",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Error message"
+                    },
+                    "errors": {
+                        "properties": {
+                            "field": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "example": "The field is required."
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Entries",
+            "description": "API Endpoints for managing team entries"
+        },
+        {
+            "name": "Teams",
+            "description": "API Endpoints for managing teams"
+        },
+        {
+            "name": "Authentication",
+            "description": "API Endpoints for user authentication"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ]
+}
