@@ -49,6 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //Route::middleware('verified')->group(function () {
         // Teams routes
         Route::get('/teams', [\App\Http\Controllers\Api\TeamController::class, 'index']);
+        Route::get('/teams/{teamId}', [\App\Http\Controllers\Api\TeamController::class, 'show']);
         Route::post('/teams', [\App\Http\Controllers\Api\TeamController::class, 'store']);
         Route::post('/teams/join', [\App\Http\Controllers\Api\TeamController::class, 'joinByCode']);
         Route::get('/teams/join/{token}', [\App\Http\Controllers\Api\TeamController::class, 'joinByLink']);
@@ -105,4 +106,3 @@ Route::get('/debug-auth', function (Request $request) {
         'user' => auth()->user(),
     ]);
 });
-

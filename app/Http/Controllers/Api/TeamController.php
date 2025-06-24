@@ -564,4 +564,61 @@ class TeamController extends Controller
             'team' => $team
         ]);
     }
+    /**
+     * Display the specified team.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $teamId
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Get(
+     *     path="/teams/{teamId}",
+     *     summary="Get a specific team by ID",
+     *     description="Returns details of a specific team. Only accessible to team members.",
+     *     operationId="getTeam",
+     *     tags={"Teams"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="ID of the team",
+     *         required=true,
+     *         @OA\Schema(type="integer", format="int64")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="team", ref="#/components/schemas/Team")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden - User is not a member of this team"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Team not found"
+     *     )
+     * )
+     */
+    public function show(Request $request, $teamId): JsonResponse
+    {
+        $team = Team::with('founder')->findOrFail($teamId);
+        $user = $request->user();
+
+        // Check if user is a member of the team
+        if (!$team->users()->where('user_id', $user->id)->exists()) {
+            return response()->json(['message' => 'You do not have permission to view this team'], 403);
+        }
+
+        // Add is_admin flag to the response
+        $team->is_admin = $team->admins()->where('user_id', $user->id)->exists();
+
+        return response()->json(['team' => $team]);
+    }
 }
