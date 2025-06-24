@@ -257,30 +257,6 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Get CSRF token for SPA.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     *
-     * @OA\Get(
-     *     path="/csrf-token",
-     *     summary="Get a CSRF token for SPA authentication",
-     *     tags={"Authentication"},
-     *     @OA\Response(
-     *         response=200,
-     *         description="CSRF token retrieved successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="csrf_token", type="string", example="example_csrf_token_string")
-     *         )
-     *     )
-     * )
-     */
-    public function getCsrfToken(): JsonResponse
-    {
-        return response()->json([
-            'csrf_token' => csrf_token(),
-        ]);
-    }
 
     /**
      * Send a password reset link to the given user.
@@ -493,6 +469,62 @@ class AuthController extends Controller
         }
 
         $request->user()->sendEmailVerificationNotification();
+
+        return response()->json(['message' => 'Verification link sent']);
+    }
+
+    /**
+     * Resend the email verification notification without requiring authentication.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Post(
+     *     path="/email/verification-notification/public",
+     *     summary="Resend verification email (public)",
+     *     description="Resends the email verification notification without requiring authentication",
+     *     tags={"Authentication"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email"},
+     *             @OA\Property(property="email", type="string", format="email", example="john@example.com")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Verification link sent",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Verification link sent")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="User not found"
+     *     )
+     * )
+     */
+    public function resendVerificationEmailPublic(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(['message' => 'Email already verified']);
+        }
+
+        $user->sendEmailVerificationNotification();
 
         return response()->json(['message' => 'Verification link sent']);
     }

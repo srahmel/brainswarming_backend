@@ -52,7 +52,7 @@ class TeamController extends Controller
     {
         $user = $request->user();
         $teams = $user->teams()->with('founder')->get()->map(function ($team) use ($user) {
-            $team->is_admin = $team->admins->contains($user->id);
+            $team->is_admin = $team->admins()->where('user_id', $user->id)->exists();
             return $team;
         });
 
@@ -116,7 +116,7 @@ class TeamController extends Controller
         $user = $request->user();
 
         // Check if user is already a member of the team
-        if ($team->users->contains($user->id)) {
+        if ($team->users()->where('user_id', $user->id)->exists()) {
             return response()->json(['message' => 'You are already a member of this team', 'team' => $team]);
         }
 
@@ -184,7 +184,7 @@ class TeamController extends Controller
         $user = $request->user();
 
         // Check if user is already a member of the team
-        if ($team->users->contains($user->id)) {
+        if ($team->users()->where('user_id', $user->id)->exists()) {
             return response()->json(['message' => 'You are already a member of this team', 'team' => $team]);
         }
 
@@ -256,7 +256,7 @@ class TeamController extends Controller
             $user = Auth::user();
 
             // Check if user is already a member of the team
-            if ($team->users->contains($user->id)) {
+            if ($team->users()->where('user_id', $user->id)->exists()) {
                 return response()->json(['message' => 'You are already a member of this team', 'team' => $team]);
             }
 
@@ -328,7 +328,7 @@ class TeamController extends Controller
         $user = $request->user();
 
         // Check if user is a member of the team
-        if (!$team->users->contains($user->id)) {
+        if (!$team->users()->where('user_id', $user->id)->exists()) {
             return response()->json(['message' => 'You are not a member of this team'], 404);
         }
 
@@ -464,7 +464,7 @@ class TeamController extends Controller
         $user = $request->user();
 
         // Check if user is an admin of the team
-        if (!$team->admins->contains($user->id)) {
+        if (!$team->admins()->where('user_id', $user->id)->exists()) {
             return response()->json(['message' => 'You do not have permission to generate invite links for this team'], 403);
         }
 
@@ -551,7 +551,7 @@ class TeamController extends Controller
         $user = $request->user();
 
         // Check if user is an admin of the team
-        if (!$team->admins->contains($user->id)) {
+        if (!$team->admins()->where('user_id', $user->id)->exists()) {
             return response()->json(['message' => 'You do not have permission to update this team\'s name'], 403);
         }
 

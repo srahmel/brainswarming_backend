@@ -22,7 +22,7 @@ Brainswarming is a SaaS platform for teams to anonymously or openly submit, eval
 ## Authentication
 
 - Use Laravel Sanctum for API authentication.
-- `/register`, `/login`, `/forgot-password`, `/reset-password`, `/csrf-token` (GET) and `/teams/invite/accept` are public endpoints.
+- `/register`, `/login`, `/forgot-password`, `/reset-password`, and `/teams/invite/accept` are public endpoints.
 - All other routes require bearer token auth and `auth:sanctum` middleware.
 - Issue and revoke tokens via Sanctum best practices.
 - Password reset functionality is implemented using Laravel's built-in password reset features.
@@ -33,7 +33,6 @@ Brainswarming is a SaaS platform for teams to anonymously or openly submit, eval
 
 - All `/teams/*`, `/entries/*`, `/settings/*`, and export routes require `auth:sanctum` and are only accessible to authenticated users with the proper team association (policy-based).
 - Use Laravel policies for all models to enforce team and admin/user ownership.
-- Provide a GET `/csrf-token` endpoint returning a CSRF cookie/token, compatible with SPA and v0 tools.
 - Never expose data across teams or outside policies.
 
 ---
@@ -99,17 +98,6 @@ Authenticate a user and get a token.
 }
 ```
 
-#### `GET /csrf-token`
-Get a CSRF token for SPA authentication.
-
-**Input:** None
-
-**Output:**
-```json
-{
-  "csrf_token": "example_csrf_token_string"
-}
-```
 
 #### `POST /forgot-password`
 Send a password reset link to the user's email.
@@ -628,7 +616,7 @@ Get all teams for the authenticated user.
 - Validate all user inputs (including invite tokens, emails, etc).
 - Strict foreign key enforcement and cascading softDeletes for user/team/entry relationships.
 - API Resource responses for all data.
-- Proper CORS and CSRF handling (support SPA usage).
+- Proper CORS handling for API access.
 - Never expose user emails or PII unless allowed by anonymous setting.
 
 ---
@@ -820,9 +808,3 @@ sudo apt-get install php-sqlite3
 
 ---
 
-## CSRF Endpoint Example
-
-```php
-// routes/api.php
-Route::get('/csrf-token', function () {
-    return response()->json(['csrf_token' => csrf_token()]);

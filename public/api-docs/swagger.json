@@ -15,7 +15,7 @@
     },
     "servers": [
         {
-            "url": "/api",
+            "url": "https://v2202209183503201737.happysrv.de/srahmel/brainswarming/api",
             "description": "API Server"
         }
     ],
@@ -294,34 +294,6 @@
                 ]
             }
         },
-        "/csrf-token": {
-            "get": {
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Get a CSRF token for SPA authentication",
-                "description": "Get CSRF token for SPA.",
-                "operationId": "e0ee4f5b54fb5fbd22433a14e760aa3a",
-                "responses": {
-                    "200": {
-                        "description": "CSRF token retrieved successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "csrf_token": {
-                                            "type": "string",
-                                            "example": "example_csrf_token_string"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/forgot-password": {
             "post": {
                 "tags": [
@@ -548,6 +520,60 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/email/verification-notification/public": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Resend verification email (public)",
+                "description": "Resends the email verification notification without requiring authentication",
+                "operationId": "35b6b9b9bef0eddd3a1d0a41b46aabc2",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Verification link sent",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Verification link sent"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "404": {
+                        "description": "User not found"
+                    }
+                }
             }
         },
         "/teams/{teamId}/entries": {
@@ -1649,6 +1675,43 @@
                     }
                 ]
             }
+        },
+        "/user": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get authenticated user information",
+                "description": "Returns the currently authenticated user's information",
+                "operationId": "1e336649837531fae9055130408db5bf",
+                "responses": {
+                    "200": {
+                        "description": "User information retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -2202,6 +2265,10 @@
         {
             "name": "Authentication",
             "description": "API Endpoints for user authentication"
+        },
+        {
+            "name": "User",
+            "description": "API Endpoints for user information"
         }
     ],
     "security": [

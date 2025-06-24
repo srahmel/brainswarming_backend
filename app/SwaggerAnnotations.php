@@ -18,7 +18,7 @@ namespace App;
  * )
  *
  * @OA\Server(
- *     url="/api",
+ *     url=L5_SWAGGER_CONST_HOST,
  *     description="API Server"
  * )
  *
@@ -37,6 +37,11 @@ namespace App;
  * @OA\Tag(
  *     name="Teams",
  *     description="API Endpoints for managing teams"
+ * )
+ *
+ * @OA\Tag(
+ *     name="User",
+ *     description="API Endpoints for user information"
  * )
  *
  * @OA\Schema(
