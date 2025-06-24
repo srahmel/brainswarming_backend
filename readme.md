@@ -22,9 +22,10 @@ Brainswarming is a SaaS platform for teams to anonymously or openly submit, eval
 ## Authentication
 
 - Use Laravel Sanctum for API authentication.
-- `/register`, `/login`, `/csrf-token` (GET) and `/teams/invite/accept` are public endpoints.
+- `/register`, `/login`, `/forgot-password`, `/reset-password`, `/csrf-token` (GET) and `/teams/invite/accept` are public endpoints.
 - All other routes require bearer token auth and `auth:sanctum` middleware.
 - Issue and revoke tokens via Sanctum best practices.
+- Password reset functionality is implemented using Laravel's built-in password reset features.
 
 ---
 
@@ -107,6 +108,43 @@ Get a CSRF token for SPA authentication.
 ```json
 {
   "csrf_token": "example_csrf_token_string"
+}
+```
+
+#### `POST /forgot-password`
+Send a password reset link to the user's email.
+
+**Input:**
+```json
+{
+  "email": "john@example.com"
+}
+```
+
+**Output:**
+```json
+{
+  "message": "We have emailed your password reset link"
+}
+```
+
+#### `POST /reset-password`
+Reset the user's password using the token received in email.
+
+**Input:**
+```json
+{
+  "token": "1234567890abcdef1234567890abcdef",
+  "email": "john@example.com",
+  "password": "newpassword",
+  "password_confirmation": "newpassword"
+}
+```
+
+**Output:**
+```json
+{
+  "message": "Your password has been reset"
 }
 ```
 
@@ -284,6 +322,30 @@ Update team settings.
       "allow_anonymous_entries": true,
       "require_approval": false
     },
+    "created_at": "2023-06-10T12:00:00.000000Z",
+    "updated_at": "2023-06-10T12:00:00.000000Z"
+  }
+}
+```
+
+#### `PATCH /teams/{teamId}/name`
+Update team name (only available to team admins).
+
+**Input:**
+```json
+{
+  "name": "Updated Team Name"
+}
+```
+
+**Output:**
+```json
+{
+  "message": "Team name updated successfully",
+  "team": {
+    "id": 1,
+    "name": "Updated Team Name",
+    "team_code": "DEV123",
     "created_at": "2023-06-10T12:00:00.000000Z",
     "updated_at": "2023-06-10T12:00:00.000000Z"
   }

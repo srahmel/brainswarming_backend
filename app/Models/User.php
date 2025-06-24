@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
+use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -25,10 +28,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *     @OA\Property(property="updated_at", type="string", format="date-time", example="2023-06-10T12:00:00.000000Z", description="Last update timestamp")
  * )
  */
-class User extends Authenticatable
+class User extends Authenticatable implements CanResetPasswordContract, MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, CanResetPassword, MustVerifyEmailTrait;
 
     /**
      * The attributes that are mass assignable.

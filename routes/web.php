@@ -16,3 +16,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// CSRF token endpoint
+Route::get('/csrf-token', [\App\Http\Controllers\Api\AuthController::class, 'getCsrfToken']);

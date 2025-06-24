@@ -15,20 +15,15 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Public endpoints
-Route::post('/register', function () {
-    // Implementation will be added later
-    return response()->json(['message' => 'Register endpoint']);
-});
+Route::post('/register', [\App\Http\Controllers\Api\AuthController::class, 'register']);
+Route::post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
+Route::post('/forgot-password', [\App\Http\Controllers\Api\AuthController::class, 'forgotPassword']);
+Route::post('/reset-password', [\App\Http\Controllers\Api\AuthController::class, 'resetPassword']);
 
-Route::post('/login', function () {
-    // Implementation will be added later
-    return response()->json(['message' => 'Login endpoint']);
-});
+// Email verification routes
+Route::get('/email/verify/{id}/{hash}', [\App\Http\Controllers\Api\AuthController::class, 'verifyEmail'])
+    ->name('verification.verify');
 
-// CSRF token endpoint
-Route::get('/csrf-token', function () {
-    return response()->json(['csrf_token' => csrf_token()]);
-});
 
 Route::post('/teams/invite/accept', [\App\Http\Controllers\Api\TeamController::class, 'acceptInvite']);
 
@@ -43,12 +38,21 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-    // Teams routes
-    Route::get('/teams', [\App\Http\Controllers\Api\TeamController::class, 'index']);
-    Route::post('/teams', [\App\Http\Controllers\Api\TeamController::class, 'store']);
-    Route::post('/teams/join', [\App\Http\Controllers\Api\TeamController::class, 'joinByCode']);
-    Route::get('/teams/join/{token}', [\App\Http\Controllers\Api\TeamController::class, 'joinByLink']);
-    Route::delete('/teams/{teamId}/leave', [\App\Http\Controllers\Api\TeamController::class, 'leave']);
+    // Logout route
+    Route::post('/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
+
+    // Email verification resend route
+    Route::post('/email/verification-notification', [\App\Http\Controllers\Api\AuthController::class, 'resendVerificationEmail'])
+        ->name('verification.send');
+
+    // Routes that require email verification
+    Route::middleware('verified')->group(function () {
+        // Teams routes
+        Route::get('/teams', [\App\Http\Controllers\Api\TeamController::class, 'index']);
+        Route::post('/teams', [\App\Http\Controllers\Api\TeamController::class, 'store']);
+        Route::post('/teams/join', [\App\Http\Controllers\Api\TeamController::class, 'joinByCode']);
+        Route::get('/teams/join/{token}', [\App\Http\Controllers\Api\TeamController::class, 'joinByLink']);
+        Route::delete('/teams/{teamId}/leave', [\App\Http\Controllers\Api\TeamController::class, 'leave']);
 
     Route::delete('/teams/{team}', function ($team) {
         // Implementation will be added later
@@ -61,6 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::post('/teams/{teamId}/invite/generate', [\App\Http\Controllers\Api\TeamController::class, 'generateInviteLink']);
+    Route::patch('/teams/{teamId}/name', [\App\Http\Controllers\Api\TeamController::class, 'updateName']);
 
     // Entries routes
     // Routes for deleted entries, restore, and export (must be defined before the {id} routes)
@@ -74,6 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/teams/{teamId}/entries/{id}', [\App\Http\Controllers\Api\EntryController::class, 'update']);
     Route::delete('/teams/{teamId}/entries/{id}', [\App\Http\Controllers\Api\EntryController::class, 'destroy']);
     Route::post('/teams/{teamId}/entries/{id}/restore', [\App\Http\Controllers\Api\EntryController::class, 'restore']);
+    });
 
     // Admin routes
     Route::post('/teams/{team}/admins/add', function ($team) {

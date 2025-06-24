@@ -63,6 +63,12 @@
                                         "type": "string",
                                         "example": "Johnny",
                                         "nullable": true
+                                    },
+                                    "invite_token": {
+                                        "description": "Team invite token to automatically join a team after registration",
+                                        "type": "string",
+                                        "example": "unique_invite_token_string",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -119,6 +125,30 @@
                                         "token_type": {
                                             "type": "string",
                                             "example": "Bearer"
+                                        },
+                                        "team": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Development Team"
+                                                },
+                                                "team_code": {
+                                                    "type": "string",
+                                                    "example": "DEV123"
+                                                }
+                                            },
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "message": {
+                                            "description": "Message indicating whether the user joined an existing team or a new team was created",
+                                            "type": "string",
+                                            "example": "User registered and joined team successfully",
+                                            "nullable": true
                                         }
                                     },
                                     "type": "object"
@@ -290,6 +320,234 @@
                         }
                     }
                 }
+            }
+        },
+        "/forgot-password": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Send a password reset link",
+                "description": "Sends a password reset link to the user's email address",
+                "operationId": "f46fe87b31c0dadd30642d353886e6f1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset link sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password reset link sent to your email"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/reset-password": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Reset password",
+                "description": "Resets the user's password using the token received in email",
+                "operationId": "f93180f97c46f79e028b188d8763b2e1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "token",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "type": "string",
+                                        "example": "1234567890abcdef1234567890abcdef"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "newpassword"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "newpassword"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Your password has been reset"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/email/verify/{id}/{hash}": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Verify email address",
+                "description": "Verifies the user's email address using the link sent to their email",
+                "operationId": "a22a2042e58774050a0126dd2d638e0a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "hash",
+                        "in": "path",
+                        "description": "Email verification hash",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "expires",
+                        "in": "query",
+                        "description": "Expiration timestamp",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "signature",
+                        "in": "query",
+                        "description": "URL signature",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email verified successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Email verified successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid verification link"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                }
+            }
+        },
+        "/email/verification-notification": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Resend verification email",
+                "description": "Resends the email verification notification",
+                "operationId": "dbd174e65f6f4fcf1f570c57ee2a290a",
+                "responses": {
+                    "200": {
+                        "description": "Verification link sent",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Verification link sent"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/teams/{teamId}/entries": {
@@ -1304,6 +1562,85 @@
                     },
                     "404": {
                         "description": "Team not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/teams/{teamId}/name": {
+            "patch": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Update team name",
+                "description": "Updates the name of a team (requires admin privileges)",
+                "operationId": "updateTeamName",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "ID of the team",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Updated Team Name"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Team name updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Team name updated successfully"
+                                        },
+                                        "team": {
+                                            "$ref": "#/components/schemas/Team"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden - User is not an admin"
+                    },
+                    "404": {
+                        "description": "Team not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
                     }
                 },
                 "security": [

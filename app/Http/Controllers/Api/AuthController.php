@@ -8,8 +8,10 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 /**
  * Authentication controller for handling user registration, login, and logout.
@@ -85,6 +87,9 @@ class AuthController extends Controller
             'nickname' => $request->nickname,
             'anonymous' => $request->anonymous ?? false,
         ]);
+
+        // Send email verification notification
+        $user->sendEmailVerificationNotification();
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -275,5 +280,220 @@ class AuthController extends Controller
         return response()->json([
             'csrf_token' => csrf_token(),
         ]);
+    }
+
+    /**
+     * Send a password reset link to the given user.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Post(
+     *     path="/forgot-password",
+     *     summary="Send a password reset link",
+     *     description="Sends a password reset link to the user's email address",
+     *     tags={"Authentication"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email"},
+     *             @OA\Property(property="email", type="string", format="email", example="john@example.com")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Password reset link sent successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Password reset link sent to your email")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        return $status === Password::RESET_LINK_SENT
+            ? response()->json(['message' => __($status)])
+            : response()->json(['message' => __($status)], 400);
+    }
+
+    /**
+     * Reset the user's password.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Post(
+     *     path="/reset-password",
+     *     summary="Reset password",
+     *     description="Resets the user's password using the token received in email",
+     *     tags={"Authentication"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"token", "email", "password", "password_confirmation"},
+     *             @OA\Property(property="token", type="string", example="1234567890abcdef1234567890abcdef"),
+     *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+     *             @OA\Property(property="password", type="string", format="password", example="newpassword"),
+     *             @OA\Property(property="password_confirmation", type="string", format="password", example="newpassword")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Password reset successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Your password has been reset")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
+
+                $user->save();
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? response()->json(['message' => __($status)])
+            : response()->json(['message' => __($status)], 400);
+    }
+
+    /**
+     * Verify the user's email address.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Get(
+     *     path="/email/verify/{id}/{hash}",
+     *     summary="Verify email address",
+     *     description="Verifies the user's email address using the link sent to their email",
+     *     tags={"Authentication"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="User ID",
+     *         required=true,
+     *         @OA\Schema(type="integer", format="int64")
+     *     ),
+     *     @OA\Parameter(
+     *         name="hash",
+     *         in="path",
+     *         description="Email verification hash",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="expires",
+     *         in="query",
+     *         description="Expiration timestamp",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="signature",
+     *         in="query",
+     *         description="URL signature",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Email verified successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Email verified successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid verification link"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     )
+     * )
+     */
+    public function verifyEmail(Request $request, $id, $hash): JsonResponse
+    {
+        $user = User::findOrFail($id);
+
+        if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+            return response()->json(['message' => 'Invalid verification link'], 400);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(['message' => 'Email already verified']);
+        }
+
+        if ($user->markEmailAsVerified()) {
+            event(new \Illuminate\Auth\Events\Verified($user));
+        }
+
+        return response()->json(['message' => 'Email verified successfully']);
+    }
+
+    /**
+     * Resend the email verification notification.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Post(
+     *     path="/email/verification-notification",
+     *     summary="Resend verification email",
+     *     description="Resends the email verification notification",
+     *     tags={"Authentication"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Verification link sent",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Verification link sent")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     )
+     * )
+     */
+    public function resendVerificationEmail(Request $request): JsonResponse
+    {
+        if ($request->user()->hasVerifiedEmail()) {
+            return response()->json(['message' => 'Email already verified']);
+        }
+
+        $request->user()->sendEmailVerificationNotification();
+
+        return response()->json(['message' => 'Verification link sent']);
     }
 }

@@ -486,4 +486,82 @@ class TeamController extends Controller
             'expires_at' => $expiresAt,
         ]);
     }
+
+    /**
+     * Update the team name.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $teamId
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Patch(
+     *     path="/teams/{teamId}/name",
+     *     summary="Update team name",
+     *     description="Updates the name of a team (requires admin privileges)",
+     *     operationId="updateTeamName",
+     *     tags={"Teams"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="ID of the team",
+     *         required=true,
+     *         @OA\Schema(type="integer", format="int64")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name"},
+     *             @OA\Property(property="name", type="string", example="Updated Team Name")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Team name updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Team name updated successfully"),
+     *             @OA\Property(property="team", ref="#/components/schemas/Team")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden - User is not an admin"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Team not found"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
+    public function updateName(Request $request, $teamId): JsonResponse
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $team = Team::findOrFail($teamId);
+        $user = $request->user();
+
+        // Check if user is an admin of the team
+        if (!$team->admins->contains($user->id)) {
+            return response()->json(['message' => 'You do not have permission to update this team\'s name'], 403);
+        }
+
+        $team->update([
+            'name' => $request->name,
+        ]);
+
+        return response()->json([
+            'message' => 'Team name updated successfully',
+            'team' => $team
+        ]);
+    }
 }
