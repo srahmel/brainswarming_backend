@@ -607,48 +607,29 @@ class EntryController extends Controller
 
         $team = Team::findOrFail($teamId);
 
-        $entries = $team->entries()->orderBy('final_prio', 'desc')->get();
+        $entries = $team->entries()
+            ->orderBy('final_prio', 'desc')
+            ->get();
 
-        // Create CSV content
         $headers = [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename=entries.csv',
         ];
 
-        $columns = [
-            'ID', 'Problem', 'Solution', 'Area', 'Time Saved Per Year',
-            'Gross Profit Per Year', 'Effort', 'Monetary Explanation',
-            'Link', 'Anonymous', 'Final Priority', 'Created At'
-        ];
-
-        $callback = function() use ($entries, $columns) {
-            $file = fopen('php://output', 'w');
-
-            // Write the header line directly to ensure exact format
-            fwrite($file, "ID,Problem,Solution,Area\n");
-
-            // Flush the output buffer to ensure headers are sent
-            ob_flush();
-            flush();
-
+        $callback = function () use ($entries) {
+            $handle = fopen('php://output', 'w');
+            // CSV header row
+            fputcsv($handle, ['ID', 'Problem', 'Solution', 'Area']);
+            // CSV data rows
             foreach ($entries as $entry) {
-                fputcsv($file, [
+                fputcsv($handle, [
                     $entry->id,
                     $entry->problem,
                     $entry->solution,
                     $entry->area,
-                    $entry->time_saved_per_year,
-                    $entry->gross_profit_per_year,
-                    $entry->effort,
-                    $entry->monetary_explanation,
-                    $entry->link,
-                    $entry->anonymous ? 'Yes' : 'No',
-                    $entry->final_prio,
-                    $entry->created_at->format('Y-m-d H:i:s')
                 ]);
             }
-
-            fclose($file);
+            fclose($handle);
         };
 
         return response()->stream($callback, 200, $headers);

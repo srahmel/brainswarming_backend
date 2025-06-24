@@ -60,6 +60,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/teams/{team}/settings', [\App\Http\Controllers\Api\TeamController::class, 'updateSettings']);
 
         Route::post('/teams/{teamId}/invite/generate', [\App\Http\Controllers\Api\TeamController::class, 'generateInviteLink']);
+        Route::get('/teams/{teamId}/invite-link', [\App\Http\Controllers\Api\TeamController::class, 'getInviteLink']);
         Route::patch('/teams/{teamId}/name', [\App\Http\Controllers\Api\TeamController::class, 'updateName']);
 
         // Entries routes

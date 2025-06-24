@@ -564,6 +564,92 @@ class TeamController extends Controller
             'team' => $team
         ]);
     }
+
+    /**
+     * Get or generate an invite link for a team.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $teamId
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Get(
+     *     path="/teams/{teamId}/invite-link",
+     *     summary="Get team invite link",
+     *     description="Returns an existing invite link or generates a new one if none exists or if expired",
+     *     operationId="getTeamInviteLink",
+     *     tags={"Teams"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="ID of the team",
+     *         required=true,
+     *         @OA\Schema(type="integer", format="int64")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Invite link retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Invite link retrieved successfully"),
+     *             @OA\Property(property="invite_token", type="string", example="abc123xyz789"),
+     *             @OA\Property(property="invite_link", type="string", example="https://example.com/api/teams/join/abc123xyz789"),
+     *             @OA\Property(property="expires_at", type="string", format="date-time", example="2023-07-10T12:00:00.000000Z")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden - User is not an admin"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Team not found"
+     *     )
+     * )
+     */
+    public function getInviteLink(Request $request, $teamId): JsonResponse
+    {
+        $team = Team::findOrFail($teamId);
+        $user = $request->user();
+
+        // Check if user is an admin of the team
+        if (!$team->admins()->where('user_id', $user->id)->exists()) {
+            return response()->json(['message' => 'You do not have permission to access invite links for this team'], 403);
+        }
+
+        // Check if a valid invite token already exists
+        if ($team->invite_token && $team->invite_expires_at && $team->invite_expires_at->isFuture()) {
+            $inviteLink = url("/api/teams/join/{$team->invite_token}");
+
+            return response()->json([
+                'message' => 'Invite link retrieved successfully',
+                'invite_token' => $team->invite_token,
+                'invite_link' => $inviteLink,
+                'expires_at' => $team->invite_expires_at,
+            ]);
+        }
+
+        // Generate a new invite token if none exists or if expired
+        $inviteToken = \Illuminate\Support\Str::random(32);
+        $expiresAt = now()->addDays(7); // Default expiration is 7 days
+
+        $team->update([
+            'invite_token' => $inviteToken,
+            'invite_expires_at' => $expiresAt,
+        ]);
+
+        $inviteLink = url("/api/teams/join/{$inviteToken}");
+
+        return response()->json([
+            'message' => 'New invite link generated successfully',
+            'invite_token' => $inviteToken,
+            'invite_link' => $inviteLink,
+            'expires_at' => $expiresAt,
+        ]);
+    }
     /**
      * Display the specified team.
      *

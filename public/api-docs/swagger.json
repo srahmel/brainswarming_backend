@@ -1676,6 +1676,73 @@
                 ]
             }
         },
+        "/teams/{teamId}/invite-link": {
+            "get": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Get team invite link",
+                "description": "Returns an existing invite link or generates a new one if none exists or if expired",
+                "operationId": "getTeamInviteLink",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "ID of the team",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invite link retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invite link retrieved successfully"
+                                        },
+                                        "invite_token": {
+                                            "type": "string",
+                                            "example": "abc123xyz789"
+                                        },
+                                        "invite_link": {
+                                            "type": "string",
+                                            "example": "https://example.com/api/teams/join/abc123xyz789"
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2023-07-10T12:00:00.000000Z"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden - User is not an admin"
+                    },
+                    "404": {
+                        "description": "Team not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/teams/{teamId}": {
             "get": {
                 "tags": [
