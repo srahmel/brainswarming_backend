@@ -213,9 +213,9 @@ class AuthController extends Controller
 
         // Check if user exists and password is correct
         if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
+            return response()->json([
+                'message' => 'Invalid credentials',
+            ], 401);
         }
 
         // Create a new token for the user
@@ -304,7 +304,7 @@ class AuthController extends Controller
         );
 
         return $status === Password::RESET_LINK_SENT
-            ? response()->json(['message' => __($status)])
+            ? response()->json(['message' => 'Password reset link sent to your email'])
             : response()->json(['message' => __($status)], 400);
     }
 

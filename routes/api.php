@@ -55,15 +55,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/teams/join/{token}', [\App\Http\Controllers\Api\TeamController::class, 'joinByLink']);
         Route::delete('/teams/{teamId}/leave', [\App\Http\Controllers\Api\TeamController::class, 'leave']);
 
-        Route::delete('/teams/{team}', function ($team) {
-            // Implementation will be added later
-            return response()->json(['message' => 'Delete team endpoint']);
-        });
+        Route::delete('/teams/{team}', [\App\Http\Controllers\Api\TeamController::class, 'destroy']);
 
-        Route::patch('/teams/{team}/settings', function ($team) {
-            // Implementation will be added later
-            return response()->json(['message' => 'Update team settings endpoint']);
-        });
+        Route::patch('/teams/{team}/settings', [\App\Http\Controllers\Api\TeamController::class, 'updateSettings']);
 
         Route::post('/teams/{teamId}/invite/generate', [\App\Http\Controllers\Api\TeamController::class, 'generateInviteLink']);
         Route::patch('/teams/{teamId}/name', [\App\Http\Controllers\Api\TeamController::class, 'updateName']);
@@ -83,21 +77,12 @@ Route::middleware('auth:sanctum')->group(function () {
     //});
 
     // Admin routes
-    Route::post('/teams/{team}/admins/add', function ($team) {
-        // Implementation will be added later
-        return response()->json(['message' => 'Add team admin endpoint']);
-    });
+    Route::post('/teams/{team}/admins/add', [\App\Http\Controllers\Api\TeamController::class, 'addAdmin']);
 
-    Route::post('/teams/{team}/admins/remove', function ($team) {
-        // Implementation will be added later
-        return response()->json(['message' => 'Remove team admin endpoint']);
-    });
+    Route::post('/teams/{team}/admins/remove', [\App\Http\Controllers\Api\TeamController::class, 'removeAdmin']);
 
     // User routes
-    Route::get('/me/teams', function () {
-        // Implementation will be added later
-        return response()->json(['message' => 'Get user teams endpoint']);
-    });
+    Route::get('/me/teams', [\App\Http\Controllers\Api\UserController::class, 'getTeams']);
 });
 
 Route::get('/debug-auth', function (Request $request) {

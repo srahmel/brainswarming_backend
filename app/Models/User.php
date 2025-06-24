@@ -77,7 +77,8 @@ class User extends Authenticatable implements CanResetPasswordContract, MustVeri
     {
         return $this->belongsToMany(Team::class)
             ->withPivot('is_admin')
-            ->withTimestamps();
+            ->withTimestamps()
+            ->withCasts(['is_admin' => 'boolean']);
     }
 
     /**
@@ -95,6 +96,7 @@ class User extends Authenticatable implements CanResetPasswordContract, MustVeri
     {
         return $this->belongsToMany(Team::class)
             ->wherePivot('is_admin', true)
-            ->withTimestamps();
+            ->withTimestamps()
+            ->withCasts(['is_admin' => 'boolean']);
     }
 }

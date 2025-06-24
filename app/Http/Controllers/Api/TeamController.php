@@ -621,4 +621,303 @@ class TeamController extends Controller
 
         return response()->json(['team' => $team]);
     }
+
+    /**
+     * Delete a team.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $team
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Delete(
+     *     path="/teams/{team}",
+     *     summary="Delete a team",
+     *     description="Deletes a team. Only accessible to team admins.",
+     *     operationId="deleteTeam",
+     *     tags={"Teams"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="team",
+     *         in="path",
+     *         description="ID of the team",
+     *         required=true,
+     *         @OA\Schema(type="integer", format="int64")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Team deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Team deleted successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden - User is not an admin of this team"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Team not found"
+     *     )
+     * )
+     */
+    public function destroy(Request $request, $team): JsonResponse
+    {
+        $team = Team::findOrFail($team);
+        $user = $request->user();
+
+        // Check if user is an admin of the team
+        if (!$team->admins()->where('user_id', $user->id)->exists()) {
+            return response()->json(['message' => 'You do not have permission to delete this team'], 403);
+        }
+
+        // Delete the team
+        $team->delete();
+
+        return response()->json(['message' => 'Team deleted successfully']);
+    }
+
+    /**
+     * Update team settings.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $team
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Patch(
+     *     path="/teams/{team}/settings",
+     *     summary="Update team settings",
+     *     description="Updates the settings for a team. Only accessible to team admins.",
+     *     operationId="updateTeamSettings",
+     *     tags={"Teams"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="team",
+     *         in="path",
+     *         description="ID of the team",
+     *         required=true,
+     *         @OA\Schema(type="integer", format="int64")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="settings", type="object", example={"allow_anonymous_entries": true, "require_approval": false})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Team settings updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Team settings updated successfully"),
+     *             @OA\Property(property="team", ref="#/components/schemas/Team")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden - User is not an admin of this team"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Team not found"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
+    public function updateSettings(Request $request, $team): JsonResponse
+    {
+        $request->validate([
+            'settings' => 'required|array',
+        ]);
+
+        $team = Team::findOrFail($team);
+        $user = $request->user();
+
+        // Check if user is an admin of the team
+        if (!$team->admins()->where('user_id', $user->id)->exists()) {
+            return response()->json(['message' => 'You do not have permission to update this team\'s settings'], 403);
+        }
+
+        // Update the team settings
+        $team->update([
+            'settings' => $request->settings,
+        ]);
+
+        return response()->json([
+            'message' => 'Team settings updated successfully',
+            'team' => $team
+        ]);
+    }
+
+    /**
+     * Add an admin to a team.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $team
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Post(
+     *     path="/teams/{team}/admins/add",
+     *     summary="Add an admin to a team",
+     *     description="Adds a user as an admin to a team. Only accessible to existing team admins.",
+     *     operationId="addTeamAdmin",
+     *     tags={"Teams"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="team",
+     *         in="path",
+     *         description="ID of the team",
+     *         required=true,
+     *         @OA\Schema(type="integer", format="int64")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"user_id"},
+     *             @OA\Property(property="user_id", type="integer", example=2)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="User added as admin successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="User added as admin successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden - User is not an admin of this team"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Team or user not found"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
+    public function addAdmin(Request $request, $team): JsonResponse
+    {
+        $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
+        ]);
+
+        $team = Team::findOrFail($team);
+        $user = $request->user();
+        $targetUser = User::findOrFail($request->user_id);
+
+        // Check if the authenticated user is an admin of the team
+        if (!$team->admins()->where('user_id', $user->id)->exists()) {
+            return response()->json(['message' => 'You do not have permission to add admins to this team'], 403);
+        }
+
+        // Check if the target user is a member of the team
+        if (!$team->users()->where('user_id', $targetUser->id)->exists()) {
+            return response()->json(['message' => 'The user is not a member of this team'], 422);
+        }
+
+        // Make the user an admin
+        $team->users()->updateExistingPivot($targetUser->id, ['is_admin' => true]);
+
+        return response()->json(['message' => 'User added as admin successfully']);
+    }
+
+    /**
+     * Remove an admin from a team.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $team
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Post(
+     *     path="/teams/{team}/admins/remove",
+     *     summary="Remove an admin from a team",
+     *     description="Removes admin privileges from a user in a team. Only accessible to existing team admins.",
+     *     operationId="removeTeamAdmin",
+     *     tags={"Teams"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="team",
+     *         in="path",
+     *         description="ID of the team",
+     *         required=true,
+     *         @OA\Schema(type="integer", format="int64")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"user_id"},
+     *             @OA\Property(property="user_id", type="integer", example=2)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Admin privileges removed successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Admin privileges removed successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden - User is not an admin of this team"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Team or user not found"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error or cannot remove the founder as admin"
+     *     )
+     * )
+     */
+    public function removeAdmin(Request $request, $team): JsonResponse
+    {
+        $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
+        ]);
+
+        $team = Team::findOrFail($team);
+        $user = $request->user();
+        $targetUser = User::findOrFail($request->user_id);
+
+        // Check if the authenticated user is an admin of the team
+        if (!$team->admins()->where('user_id', $user->id)->exists()) {
+            return response()->json(['message' => 'You do not have permission to remove admins from this team'], 403);
+        }
+
+        // Check if the target user is the founder (cannot remove founder as admin)
+        if ($team->founder_user_id === $targetUser->id) {
+            return response()->json(['message' => 'Cannot remove the team founder as admin'], 422);
+        }
+
+        // Check if the target user is an admin of the team
+        if (!$team->admins()->where('user_id', $targetUser->id)->exists()) {
+            return response()->json(['message' => 'The user is not an admin of this team'], 422);
+        }
+
+        // Remove admin privileges
+        $team->users()->updateExistingPivot($targetUser->id, ['is_admin' => false]);
+
+        return response()->json(['message' => 'Admin privileges removed successfully']);
+    }
 }

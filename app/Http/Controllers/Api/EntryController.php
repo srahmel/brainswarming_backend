@@ -612,7 +612,7 @@ class EntryController extends Controller
         // Create CSV content
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="entries.csv"',
+            'Content-Disposition' => 'attachment; filename=entries.csv',
         ];
 
         $columns = [
@@ -623,7 +623,13 @@ class EntryController extends Controller
 
         $callback = function() use ($entries, $columns) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
+
+            // Write the header line directly to ensure exact format
+            fwrite($file, "ID,Problem,Solution,Area\n");
+
+            // Flush the output buffer to ensure headers are sent
+            ob_flush();
+            flush();
 
             foreach ($entries as $entry) {
                 fputcsv($file, [

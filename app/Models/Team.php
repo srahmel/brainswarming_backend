@@ -50,7 +50,7 @@ class Team extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'settings' => 'json',
+        'settings' => 'array',
         'invite_expires_at' => 'datetime',
     ];
 
@@ -69,7 +69,8 @@ class Team extends Model
     {
         return $this->belongsToMany(User::class)
             ->withPivot('is_admin')
-            ->withTimestamps();
+            ->withTimestamps()
+            ->withCasts(['is_admin' => 'boolean']);
     }
 
     /**
@@ -79,7 +80,8 @@ class Team extends Model
     {
         return $this->belongsToMany(User::class)
             ->wherePivot('is_admin', true)
-            ->withTimestamps();
+            ->withTimestamps()
+            ->withCasts(['is_admin' => 'boolean']);
     }
 
     /**
