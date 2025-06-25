@@ -650,6 +650,199 @@ class TeamController extends Controller
             'expires_at' => $expiresAt,
         ]);
     }
+
+    /**
+     * Import JSON data to a team.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $teamId
+     * @param  string|null  $mode
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @OA\Post(
+     *     path="/teams/{teamId}/import/{mode}",
+     *     summary="Import JSON data to a team",
+     *     description="Imports settings and entries from JSON data. Mode can be 'merge' (default) or 'overwrite'.",
+     *     operationId="importTeamData",
+     *     tags={"Teams"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="ID of the team",
+     *         required=true,
+     *         @OA\Schema(type="integer", format="int64")
+     *     ),
+     *     @OA\Parameter(
+     *         name="mode",
+     *         in="path",
+     *         description="Import mode: 'merge' or 'overwrite'",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"merge", "overwrite"}, default="merge")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="settings",
+     *                 type="object",
+     *                 @OA\Property(property="time_value", type="integer", example=500),
+     *                 @OA\Property(property="multiplier", type="integer", example=2)
+     *             ),
+     *             @OA\Property(
+     *                 property="mode",
+     *                 type="object",
+     *                 description="Additional mode information (optional)"
+     *             ),
+     *             @OA\Property(
+     *                 property="ideas",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="problem", type="string", example="Manual reporting takes too long"),
+     *                     @OA\Property(property="solution", type="string", example="Automate monthly reports with a simple script and templates."),
+     *                     @OA\Property(property="area", type="string", example="Finance"),
+     *                     @OA\Property(property="time_saved_per_year", type="integer", example=30),
+     *                     @OA\Property(property="gross_profit_per_year", type="integer", example=0),
+     *                     @OA\Property(property="effort", type="string", enum={"Low", "Medium", "High"}, example="Low"),
+     *                     @OA\Property(property="monetary_explanation", type="string", example="Repetitive reports; scripting will save 2.5 days/month."),
+     *                     @OA\Property(property="link", type="string", example="https://example.com/automation"),
+     *                     @OA\Property(property="anonymous", type="boolean", example=false)
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Data imported successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Data imported successfully"),
+     *             @OA\Property(property="settings_updated", type="boolean", example=true),
+     *             @OA\Property(property="entries_imported", type="integer", example=3),
+     *             @OA\Property(property="entries_skipped", type="integer", example=0)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden - User is not an admin"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Team not found"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
+    public function import(Request $request, $teamId, $mode = 'merge'): JsonResponse
+    {
+        // Validate the mode parameter
+        if (!in_array($mode, ['merge', 'overwrite'])) {
+            return response()->json(['message' => 'Invalid import mode. Mode must be either "merge" or "overwrite".'], 422);
+        }
+
+        // Validate the request data
+        $request->validate([
+            'settings' => 'sometimes|array',
+            'settings.time_value' => 'sometimes|integer',
+            'settings.multiplier' => 'sometimes|integer',
+            'mode' => 'sometimes|array',
+            'ideas' => 'required|array',
+            'ideas.*.problem' => 'required|string',
+            'ideas.*.solution' => 'required|string',
+            'ideas.*.area' => 'required|string',
+            'ideas.*.time_saved_per_year' => 'sometimes|nullable|integer',
+            'ideas.*.gross_profit_per_year' => 'sometimes|nullable|integer',
+            'ideas.*.effort' => 'required|string|in:Low,Medium,High,low,medium,high',
+            'ideas.*.monetary_explanation' => 'required|string',
+            'ideas.*.link' => 'sometimes|nullable|string',
+            'ideas.*.anonymous' => 'sometimes|boolean',
+        ]);
+
+        $team = Team::findOrFail($teamId);
+        $user = $request->user();
+
+        // Check if user is an admin of the team
+        if (!$team->admins()->where('user_id', $user->id)->exists()) {
+            return response()->json(['message' => 'You do not have permission to import data to this team'], 403);
+        }
+
+        // Initialize counters
+        $entriesImported = 0;
+        $entriesSkipped = 0;
+        $settingsUpdated = false;
+
+        // Update team settings if provided
+        if ($request->has('settings')) {
+            $team->update([
+                'settings' => $request->settings,
+            ]);
+            $settingsUpdated = true;
+        }
+
+        // Get the entry service for calculating priorities
+        $entryService = app(\App\Services\EntryService::class);
+
+        // If mode is overwrite, delete all existing entries
+        if ($mode === 'overwrite') {
+            $team->entries()->delete();
+        }
+
+        // Import entries
+        foreach ($request->ideas as $idea) {
+            // Normalize effort value (ensure lowercase)
+            $effort = strtolower($idea['effort']);
+
+            // For merge mode, check if entry already exists based on problem text
+            if ($mode === 'merge') {
+                $existingEntry = $team->entries()->where('problem', $idea['problem'])->first();
+                if ($existingEntry) {
+                    $entriesSkipped++;
+                    continue;
+                }
+            }
+
+            // Prepare entry data
+            $entryData = [
+                'problem' => $idea['problem'],
+                'solution' => $idea['solution'],
+                'area' => $idea['area'],
+                'time_saved_per_year' => $idea['time_saved_per_year'] ?? null,
+                'gross_profit_per_year' => $idea['gross_profit_per_year'] ?? null,
+                'effort' => $effort,
+                'monetary_explanation' => $idea['monetary_explanation'],
+                'link' => $idea['link'] ?? null,
+                'anonymous' => $idea['anonymous'] ?? false,
+                'manual_override_prio' => 0, // Default value
+            ];
+
+            // Calculate final priority
+            $finalPrio = $entryService->calculatePriority($entryData);
+            $entryData['final_prio'] = $finalPrio;
+
+            // Add team_id and user_id
+            $entryData['team_id'] = $team->id;
+            $entryData['user_id'] = $user->id;
+
+            // Create the entry
+            $team->entries()->create($entryData);
+            $entriesImported++;
+        }
+
+        return response()->json([
+            'message' => 'Data imported successfully',
+            'settings_updated' => $settingsUpdated,
+            'entries_imported' => $entriesImported,
+            'entries_skipped' => $entriesSkipped,
+        ]);
+    }
+
     /**
      * Display the specified team.
      *

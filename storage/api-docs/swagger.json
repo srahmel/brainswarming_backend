@@ -522,60 +522,6 @@
                 ]
             }
         },
-        "/email/verification-notification/public": {
-            "post": {
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Resend verification email (public)",
-                "description": "Resends the email verification notification without requiring authentication",
-                "operationId": "35b6b9b9bef0eddd3a1d0a41b46aabc2",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "email"
-                                ],
-                                "properties": {
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "john@example.com"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Verification link sent",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Verification link sent"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error"
-                    },
-                    "404": {
-                        "description": "User not found"
-                    }
-                }
-            }
-        },
         "/teams/{teamId}/entries": {
             "get": {
                 "tags": [
@@ -1734,6 +1680,167 @@
                     },
                     "404": {
                         "description": "Team not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/teams/{teamId}/import/{mode}": {
+            "post": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Import JSON data to a team",
+                "description": "Imports settings and entries from JSON data. Mode can be 'merge' (default) or 'overwrite'.",
+                "operationId": "importTeamData",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "ID of the team",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "mode",
+                        "in": "path",
+                        "description": "Import mode: 'merge' or 'overwrite'",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "merge",
+                            "enum": [
+                                "merge",
+                                "overwrite"
+                            ]
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "settings": {
+                                        "properties": {
+                                            "time_value": {
+                                                "type": "integer",
+                                                "example": 500
+                                            },
+                                            "multiplier": {
+                                                "type": "integer",
+                                                "example": 2
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "mode": {
+                                        "description": "Additional mode information (optional)",
+                                        "type": "object"
+                                    },
+                                    "ideas": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "problem": {
+                                                    "type": "string",
+                                                    "example": "Manual reporting takes too long"
+                                                },
+                                                "solution": {
+                                                    "type": "string",
+                                                    "example": "Automate monthly reports with a simple script and templates."
+                                                },
+                                                "area": {
+                                                    "type": "string",
+                                                    "example": "Finance"
+                                                },
+                                                "time_saved_per_year": {
+                                                    "type": "integer",
+                                                    "example": 30
+                                                },
+                                                "gross_profit_per_year": {
+                                                    "type": "integer",
+                                                    "example": 0
+                                                },
+                                                "effort": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Low",
+                                                        "Medium",
+                                                        "High"
+                                                    ],
+                                                    "example": "Low"
+                                                },
+                                                "monetary_explanation": {
+                                                    "type": "string",
+                                                    "example": "Repetitive reports; scripting will save 2.5 days/month."
+                                                },
+                                                "link": {
+                                                    "type": "string",
+                                                    "example": "https://example.com/automation"
+                                                },
+                                                "anonymous": {
+                                                    "type": "boolean",
+                                                    "example": false
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Data imported successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data imported successfully"
+                                        },
+                                        "settings_updated": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "entries_imported": {
+                                            "type": "integer",
+                                            "example": 3
+                                        },
+                                        "entries_skipped": {
+                                            "type": "integer",
+                                            "example": 0
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden - User is not an admin"
+                    },
+                    "404": {
+                        "description": "Team not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
                     }
                 },
                 "security": [

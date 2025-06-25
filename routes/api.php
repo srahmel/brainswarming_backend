@@ -19,15 +19,11 @@ Route::post('/register', [\App\Http\Controllers\Api\AuthController::class, 'regi
 Route::post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
 Route::post('/forgot-password', [\App\Http\Controllers\Api\AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [\App\Http\Controllers\Api\AuthController::class, 'resetPassword']);
+Route::post('/teams/invite/accept', [\App\Http\Controllers\Api\TeamController::class, 'acceptInvite']);
 
 // Email verification routes
 Route::get('/email/verify/{id}/{hash}', [\App\Http\Controllers\Api\AuthController::class, 'verifyEmail'])
     ->name('verification.verify');
-
-// Public email verification notification route
-Route::post('/email/verification-notification/public', [\App\Http\Controllers\Api\AuthController::class, 'resendVerificationEmailPublic']);
-
-Route::post('/teams/invite/accept', [\App\Http\Controllers\Api\TeamController::class, 'acceptInvite']);
 
 // Swagger documentation route
 Route::get('/documentation', function () {
@@ -36,7 +32,10 @@ Route::get('/documentation', function () {
 
 // Authenticated endpoints
 Route::middleware('auth:sanctum')->group(function () {
+    // User routes
     Route::get('/user', [\App\Http\Controllers\Api\UserController::class, 'getCurrentUser']);
+    Route::get('/me', [\App\Http\Controllers\Api\UserController::class, 'getCurrentUser']);
+    Route::get('/me/teams', [\App\Http\Controllers\Api\UserController::class, 'getTeams']);
 
     // Logout route
     Route::post('/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
@@ -62,6 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/teams/{teamId}/invite/generate', [\App\Http\Controllers\Api\TeamController::class, 'generateInviteLink']);
         Route::get('/teams/{teamId}/invite-link', [\App\Http\Controllers\Api\TeamController::class, 'getInviteLink']);
         Route::patch('/teams/{teamId}/name', [\App\Http\Controllers\Api\TeamController::class, 'updateName']);
+        Route::post('/teams/{teamId}/import/{mode?}', [\App\Http\Controllers\Api\TeamController::class, 'import']);
 
         // Entries routes
         // Routes for deleted entries, restore, and export (must be defined before the {id} routes)
@@ -75,15 +75,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/teams/{teamId}/entries/{id}', [\App\Http\Controllers\Api\EntryController::class, 'update']);
         Route::delete('/teams/{teamId}/entries/{id}', [\App\Http\Controllers\Api\EntryController::class, 'destroy']);
         Route::post('/teams/{teamId}/entries/{id}/restore', [\App\Http\Controllers\Api\EntryController::class, 'restore']);
+
+        // Admin routes
+        Route::post('/teams/{team}/admins/add', [\App\Http\Controllers\Api\TeamController::class, 'addAdmin']);
+        Route::post('/teams/{team}/admins/remove', [\App\Http\Controllers\Api\TeamController::class, 'removeAdmin']);
+
     //});
 
-    // Admin routes
-    Route::post('/teams/{team}/admins/add', [\App\Http\Controllers\Api\TeamController::class, 'addAdmin']);
-
-    Route::post('/teams/{team}/admins/remove', [\App\Http\Controllers\Api\TeamController::class, 'removeAdmin']);
-
-    // User routes
-    Route::get('/me/teams', [\App\Http\Controllers\Api\UserController::class, 'getTeams']);
 });
 
 Route::get('/debug-auth', function (Request $request) {

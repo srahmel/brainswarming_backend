@@ -213,4 +213,45 @@ class TeamManagementTest extends TestCase
         ]);
         $response->assertStatus(403);
     }
+
+    /**
+     * Test joining a team using an invite link.
+     */
+    public function test_can_join_team_by_invite_link(): void
+    {
+        // Create a team with another user as founder
+        $founder = User::factory()->create();
+        $team = Team::factory()->create([
+            'founder_user_id' => $founder->id,
+        ]);
+        $team->users()->attach($founder, ['is_admin' => true]);
+
+        // Generate an invite token for the team
+        $inviteToken = \Illuminate\Support\Str::random(32);
+        $expiresAt = now()->addDays(7);
+        $team->update([
+            'invite_token' => $inviteToken,
+            'invite_expires_at' => $expiresAt,
+        ]);
+
+        // Authenticate as a different user
+        Sanctum::actingAs($this->user);
+
+        // Try to join the team using the invite link
+        $response = $this->getJson("/api/teams/join/{$inviteToken}");
+
+        $response->assertStatus(200)
+            ->assertJsonStructure(['message', 'team'])
+            ->assertJson([
+                'message' => 'Successfully joined the team',
+                'team' => [
+                    'id' => $team->id,
+                    'name' => $team->name,
+                ]
+            ]);
+
+        // Verify the user is attached to the team as a regular member
+        $this->assertTrue($team->users()->where('user_id', $this->user->id)->exists());
+        $this->assertFalse((bool)$team->users()->where('user_id', $this->user->id)->first()->pivot->is_admin);
+    }
 }
